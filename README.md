@@ -1,1 +1,1 @@
-// npm i @tanstack/react-query use-debounce formik yup react-paginate axios modern-normalize
+// npm i zustand @tanstack/react-query use-debounce react-paginate axios modern-normalize
