@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -11,15 +12,47 @@ interface FilterNotesPageProps {
 }
 
 const PER_PAGE = 12;
+const OG_IMAGE = {
+  url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+  width: 1200,
+  height: 630,
+  alt: 'NoteHub application preview',
+};
+
+function resolveTag(slug: string[] | undefined): string | undefined {
+  const rawTag = slug?.[0];
+  return rawTag && rawTag !== 'all' ? rawTag : undefined;
+}
+
+export async function generateMetadata({
+  params,
+}: FilterNotesPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const tag = resolveTag(slug);
+
+  const title = tag ? `${tag} notes | NoteHub` : 'All notes | NoteHub';
+  const description = tag
+    ? `Browse your notes filtered by the "${tag}" tag on NoteHub.`
+    : 'Browse and manage all of your notes on NoteHub.';
+  const url = `https://notehub.com/notes/filter/${tag ?? 'all'}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      images: [OG_IMAGE],
+    },
+  };
+}
 
 export default async function FilterNotesPage({
   params,
 }: FilterNotesPageProps) {
   const { slug } = await params;
-
-  // slug === ['all'] -> без фільтрації, slug === ['Work'] -> фільтр за тегом
-  const rawTag = slug?.[0];
-  const tag = rawTag && rawTag !== 'all' ? rawTag : undefined;
+  const tag = resolveTag(slug);
 
   const queryClient = new QueryClient();
 

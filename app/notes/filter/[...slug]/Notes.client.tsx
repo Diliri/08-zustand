@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
 import Pagination from '@/components/Pagination/Pagination';
 import SearchBox from '@/components/SearchBox/SearchBox';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 import css from './NotesPage.module.css';
@@ -24,11 +23,10 @@ export default function Notes({ tag }: NotesProps) {
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Якщо змінюється тег в сайдбарі - встановлюємо сторінку на першу
-  // Паттерн називається "adjust state during render" замість useEffect+setState,
-  // щоб не провокувати зайвий каскадний ре-рендер.
+  // Сбрасываем страницу на первую при смене тега в сайдбаре.
+  // Паттерн "adjust state during render" вместо useEffect+setState,
+  // чтобы не провоцировать лишний каскадный ре-рендер.
   const [prevTag, setPrevTag] = useState<string | undefined>(tag);
   if (tag !== prevTag) {
     setPrevTag(tag);
@@ -55,14 +53,6 @@ export default function Notes({ tag }: NotesProps) {
     setPage(selectedPage);
   };
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  const handleNoteCreated = () => {
-    setPage(1);
-    setIsModalOpen(false);
-  };
-
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
 
@@ -79,21 +69,15 @@ export default function Notes({ tag }: NotesProps) {
           />
         )}
 
-        <button className={css.button} onClick={handleOpenModal}>
+        <Link href="/notes/action/create" className={css.button}>
           Create note +
-        </button>
+        </Link>
       </header>
 
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
       {!isLoading && !isError && notes.length > 0 && (
         <NoteList notes={notes} />
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={handleCloseModal}>
-          <NoteForm onClose={handleCloseModal} onCreated={handleNoteCreated} />
-        </Modal>
       )}
     </div>
   );
